@@ -1,0 +1,19 @@
+{
+  "name": "inmanga",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "bluebird": "^3.5.1",
+    "epub-gen": "^0.0.17",
+    "express": "^4.16.2",
+    "node-wget": "^0.4.2"
+  }
+}
