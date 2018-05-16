@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cheerio = require('cheerio');
 const Epub = require("epub-gen");
 
 function getAllChapters(manga) {
@@ -18,25 +19,40 @@ function selectChapters(chapters, chaptersNumbers) {
   return selectedChapters ? Promise.resolve(selectedChapters) : Promise.reject(new Error('Chapters Numbers not found'));
 }
 
+function scraping(page) {
+  const dom = cheerio.load(page);
+  const listOfOptions = dom('#PageList');
+  const result = [];
+  if (listOfOptions.length > 0) {
+    const options = listOfOptions.children();
+    for(let i = 0; i < (options.length / 2); i++) {
+      const id = options[i].attribs.value;
+      const pageNumber = options[i].children[0].data;
+      result.push({
+        id,
+        pageNumber
+      });
+    }
+  }
+  return result;
+}
+
 function collectImagesIdentifierOf(manga, chapter) {
   const options = {
     baseURL: 'https://www.inmanga.com/',
     method: 'GET',
     url: `/ver/manga/${manga.urlName}/${chapter.Number}/${chapter.Identification}`
   };
-  const regex = new RegExp('<option value="' + chapter.Identification + '(.+)<\/option>', 'g');
+  // const regex = new RegExp(, 'g');
   return axios.request(options)
     .then(result => result.data)
     .then((page) => {
-      const pages = page.toString().match(regex);
+      const pages = scraping(page);
       return {
         manga: manga,
         chapterNumner: chapter.Number,
-        pages: pages.slice(0, pages.length / 2).map(page => {
-          const data = (/<option value="(.+)">(.+)<\/option>/g).exec(page)
-          return { id: data[1], pageNumber: data[2] };
-        })
-      };
+        pages: pages,
+        }
     })
 }
 
@@ -62,7 +78,6 @@ function execute(manga, chaptersNumbers) {
   getAllChapters(manga)
     .then(chapters => selectChapters(chapters, chaptersNumbers))
     .then(selectedChapters => {
-      console.log('aaaaaa', selectedChapters);
       selectedChapters.forEach(chapter => {
         collectImagesIdentifierOf(manga, chapter)
           .then(createEpub)
@@ -72,4 +87,4 @@ function execute(manga, chaptersNumbers) {
     .catch(console.log); 
 }
 
-execute({ name: 'Bleach', mangaIdentification: '92ef1c08-d79b-4485-ba5c-2588a7fd25b4' }, chapterFromTo(651,686))
+execute({ name: 'Bleach', mangaIdentification: '92ef1c08-d79b-4485-ba5c-2588a7fd25b4' }, chapterFromTo(1,50))
