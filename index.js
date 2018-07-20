@@ -41,7 +41,8 @@ function collectImagesIdentifierOf(manga, chapter) {
   const options = {
     baseURL: 'https://www.inmanga.com/',
     method: 'GET',
-    url: `/ver/manga/${manga.urlName}/${chapter.Number}/${chapter.Identification}`
+    //url: `/ver/manga/${manga.urlName}/${chapter.Number}/${chapter.Identification}`
+    url: `/chapter/chapterIndexControls?identification=${chapter.Identification}`
   };
   // const regex = new RegExp(, 'g');
   return axios.request(options)
@@ -61,13 +62,17 @@ function createData(information) {
   return `<div> ${sortedPages.reduce((res, page) => res.concat(`<img src="https://www.inmanga.com//page/getPageImage/?identification=${page.id}"></img>`), '')} </div>`
 }
 
+function formatNumber(number) {
+  return "0000".concat(number).slice(-4)
+}
+
 function createEpub(information) {
   const option = {
-    title: `${information.manga.name} - ${information.chapterNumner}`,
+    title: `${formatNumber(information.chapterNumner)} - ${information.manga.name}`,
     author: information.manga.name,
     content: [{ data: createData(information) }]
   }
-  return new Epub(option, `${information.manga.name} - ${information.chapterNumner}.epub`);
+  return new Epub(option, `${formatNumber(information.chapterNumner)} - ${information.manga.name}.epub`);
 }
 
 function chapterFromTo(x, y) {
@@ -87,4 +92,4 @@ function execute(manga, chaptersNumbers) {
     .catch(console.log); 
 }
 
-execute({ name: 'Bleach', mangaIdentification: '92ef1c08-d79b-4485-ba5c-2588a7fd25b4' }, chapterFromTo(1,50))
+execute({ name: 'FairyTail', mangaIdentification: 'd39c9e78-2d59-422a-b888-cdf6e7d72cbc' }, chapterFromTo(51,100))
